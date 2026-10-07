@@ -111,13 +111,22 @@ sbx/
 ## Setup
 
 ```
-./install.sh                # uses envs/ next to this script
-./install.sh /path/to/envs  # or point it at a different directory
+./install.sh
+./install.sh --envs-dir /path/to/envs
+./install.sh --doppler-project <project> --doppler-config <config>
+./install.sh --envs-dir /path/to/envs --doppler-project <project> --doppler-config <config>
 ```
 
 Installs `aibox` into `~/.local/bin` (already expected to be on `PATH`).
-Errors immediately if the given directory (or the default `envs/`)
-doesn't exist, or doesn't contain an `sbxenv.yaml`.
+`--envs-dir` defaults to `envs/` next to this script; errors immediately
+if that directory doesn't exist or doesn't contain an `sbxenv.yaml`.
+
+`--doppler-project`/`--doppler-config` are optional, but if you pass
+one you must pass both — install.sh writes them straight to
+`${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml` for you (see
+Defaults below), so you don't have to copy `config.example.yaml` and
+edit it by hand. Skip both flags to install `aibox` without touching
+that file.
 
 ## Usage
 
@@ -138,9 +147,10 @@ anything.
 ## Defaults
 
 To avoid typing `--doppler-project`/`--doppler-config` on every call,
-copy `config.example.yaml` to
-`${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml` and fill in your
-own values:
+either pass them to `install.sh` once (see Setup — it writes the file
+for you), or create
+`${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml` yourself, e.g. by
+copying `config.example.yaml` and filling in your own values:
 
 ```yaml
 doppler_project: your-doppler-project
