@@ -42,20 +42,30 @@ specific to any one project.
 - **Agent selection is a one-line overlay file per agent**, chosen by name
   at the command line (`aibox claude`, `aibox codex`) rather than a
   separate command per agent. Right now there are two overlays —
-  `sbxenv.claude.yaml` and `sbxenv.codex.yaml` — because those are the
-  agents in use today. Adding support for another agent (anything in
-  `sbx create --help`'s "Available agents" list, or a custom kit) means
-  adding one more `sbxenv.<agent>.yaml` file — nothing else here changes,
-  and `aibox` picks it up immediately, no reinstall needed.
+  `envs/sbxenv.claude.yaml` and `envs/sbxenv.codex.yaml` — because those
+  are the agents in use today. Adding support for another agent (anything
+  in `sbx create --help`'s "Available agents" list, or a custom kit)
+  means adding one more `sbxenv.<agent>.yaml` file to `envs/` — nothing
+  else here changes, and `aibox` picks it up immediately, no reinstall
+  needed.
 - **Which Doppler project/config to read from is passed in per call**,
   never hardcoded here. See Usage.
 
-## Files
+## Layout
 
-- `sbxenv.yaml` — the shared base, parameterized via a required `args:`
-  block: `workspace`, `doppler_project`, `doppler_config`. None of them
-  have defaults; all three must be supplied on every call, or `sbx`
-  refuses to run.
+```
+sbx/
+├── envs/
+│   ├── sbxenv.yaml          # shared base
+│   ├── sbxenv.claude.yaml   # agent: claude
+│   └── sbxenv.codex.yaml    # agent: codex
+└── install.sh
+```
+
+- `envs/sbxenv.yaml` — the shared base, parameterized via a required
+  `args:` block: `workspace`, `doppler_project`, `doppler_config`. None
+  of them have defaults; all three must be supplied on every call, or
+  `sbx` refuses to run.
 
   It declares the sandboxed agent's GitHub token as a `github` service
   secret, resolved via `doppler secrets get GH_TOKEN --plain -p
@@ -65,40 +75,45 @@ specific to any one project.
   the sandbox only ever sees a proxy-managed sentinel value; the real
   credential is injected by `sbx`'s host-side proxy only on outbound
   requests to GitHub's own hosts.
-- `sbxenv.claude.yaml` / `sbxenv.codex.yaml` — one-line overlays that pick
-  the agent (`agent: claude` / `agent: codex`). `sbx env run` deep-merges
-  whichever overlay `aibox` names after the base file, later file winning
-  (docker-compose `-f` semantics).
-- `install.sh` — (re)generates the `aibox` launcher below. Re-run it any
-  time this folder moves or is cloned to a new path (it resolves its own
-  absolute location at run time and bakes that path into the generated
-  command). Adding a new `sbxenv.<agent>.yaml` file does **not** require
-  re-running this — `aibox` looks up overlay files by name at call time,
-  not at install time.
+- `envs/sbxenv.claude.yaml` / `envs/sbxenv.codex.yaml` — one-line overlays
+  that pick the agent (`agent: claude` / `agent: codex`). `sbx env run`
+  deep-merges whichever overlay `aibox` names after the base file, later
+  file winning (docker-compose `-f` semantics).
+- `install.sh` — (re)generates the `aibox` launcher below, pointed at an
+  envs directory (default `envs/`, or a path passed as its argument — see
+  Setup). Re-run it any time that directory moves or is cloned to a new
+  path (it resolves the absolute path at run time and bakes it into the
+  generated command). Adding a new `sbxenv.<agent>.yaml` file to that
+  directory does **not** require re-running this — `aibox` looks up
+  overlay files by name at call time, not at install time.
 
 ## How it works
 
 `aibox <agent> --doppler-project <project> --doppler-config <config>`:
-1. Checks `sbxenv.<agent>.yaml` exists next to this README; errors with
-   the list of agents that actually have an overlay file if not.
+1. Checks `sbxenv.<agent>.yaml` exists in the envs directory baked in at
+   install time; errors with the list of agents that actually have an
+   overlay file if not.
 2. Reads the directory it was **called from** (`$PWD`) and passes it as
    `--env-arg workspace=$PWD`, so the sandbox mounts whatever project
-   you're currently standing in — this folder's own location never
-   matters for that part.
+   you're currently standing in — the envs directory's own location
+   never matters for that part.
 3. Requires `--doppler-project`/`--doppler-config` and errors immediately
    if either is missing — there is no default, by design, so this repo's
    history never records which project/config any particular caller
    happened to use.
-4. Runs `sbx env run <this-folder>/sbxenv.yaml <this-folder>/sbxenv.<agent>.yaml`
+4. Runs `sbx env run <envs-dir>/sbxenv.yaml <envs-dir>/sbxenv.<agent>.yaml`
    with those args.
 
 ## Setup
 
 ```
-./install.sh
+./install.sh                # uses envs/ next to this script
+./install.sh /path/to/envs  # or point it at a different directory
 ```
 
 Installs `aibox` into `~/.local/bin` (already expected to be on `PATH`).
+Errors immediately if the given directory (or the default `envs/`)
+doesn't exist, or doesn't contain an `sbxenv.yaml`.
 
 ## Usage
 
