@@ -1,0 +1,8 @@
+# Copy this to ${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml and fill
+# in your own values. That file is never part of this (or any) git repo —
+# it's where real project/config names belong, not here.
+#
+# Both keys are optional: aibox falls back to this file only for whichever
+# of --doppler-project/--doppler-config wasn't passed on the command line.
+doppler_project: your-doppler-project
+doppler_config: your-doppler-config

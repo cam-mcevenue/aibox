@@ -48,8 +48,9 @@ specific to any one project.
   means adding one more `sbxenv.<agent>.yaml` file to `envs/` — nothing
   else here changes, and `aibox` picks it up immediately, no reinstall
   needed.
-- **Which Doppler project/config to read from is passed in per call**,
-  never hardcoded here. See Usage.
+- **Which Doppler project/config to read from is passed in per call, or
+  read from a per-user default file** — never hardcoded here. See Usage
+  and Defaults below.
 
 ## Layout
 
@@ -59,6 +60,7 @@ sbx/
 │   ├── sbxenv.yaml          # shared base
 │   ├── sbxenv.claude.yaml   # agent: claude
 │   └── sbxenv.codex.yaml    # agent: codex
+├── config.example.yaml      # template for your own ~/.config/aibox/config.yaml
 └── install.sh
 ```
 
@@ -97,10 +99,12 @@ sbx/
    `--env-arg workspace=$PWD`, so the sandbox mounts whatever project
    you're currently standing in — the envs directory's own location
    never matters for that part.
-3. Requires `--doppler-project`/`--doppler-config` and errors immediately
-   if either is missing — there is no default, by design, so this repo's
-   history never records which project/config any particular caller
-   happened to use.
+3. For whichever of `--doppler-project`/`--doppler-config` wasn't passed
+   as a flag, falls back to `${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml`
+   if it exists (see Defaults). Errors immediately if either is still
+   unset after that — there is no hardcoded default anywhere in this
+   repo, by design, so this repo's history never records which
+   project/config any particular caller happened to use.
 4. Runs `sbx env run <envs-dir>/sbxenv.yaml <envs-dir>/sbxenv.<agent>.yaml`
    with those args.
 
@@ -126,9 +130,32 @@ aibox codex  --doppler-project <project> --doppler-config <config>
 
 Mounts `$PWD` as the sandbox's workspace and fetches the GitHub token
 from the given Doppler project/config. Omitting the agent, naming one
-with no matching `sbxenv.<agent>.yaml`, or omitting either Doppler flag
+with no matching `sbxenv.<agent>.yaml`, or omitting either Doppler value
+(as a flag *and* having no default file to fall back to — see below)
 all fail fast with a usage error instead of silently falling back to
 anything.
+
+## Defaults
+
+To avoid typing `--doppler-project`/`--doppler-config` on every call,
+copy `config.example.yaml` to
+`${XDG_CONFIG_HOME:-$HOME/.config}/aibox/config.yaml` and fill in your
+own values:
+
+```yaml
+doppler_project: your-doppler-project
+doppler_config: your-doppler-config
+```
+
+That path is **outside any git repo** — intentionally. It's per-user,
+per-machine state, the same category as the subscription auth and
+skills below, not something this (or any) repo's history should carry.
+
+Precedence is per-key, not all-or-nothing: a flag always wins for that
+one value; whichever value has no flag falls back to this file; if a
+value is still unset after both, `aibox` errors rather than guessing.
+So `aibox claude --doppler-project other-project` uses `other-project`
+but still reads `doppler_config` from the file, for example.
 
 ## Subscription auth and skills
 
