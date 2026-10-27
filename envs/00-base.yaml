@@ -13,6 +13,13 @@ args:
 
 workspace: ${{ env.args.workspace }}
 
+kits:
+  - ../kits/vite-plus
+  - ../kits/network
+
+sandboxOptions:
+  skills: readonly
+
 secrets:
   github:
     command: doppler secrets get GH_TOKEN --plain -p ${{ env.args.doppler_project }} -c ${{ env.args.doppler_config }}

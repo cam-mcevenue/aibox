@@ -1,0 +1,6 @@
+schemaVersion: '1'
+
+mcp:
+  servers:
+    - name: svelte
+      url: https://mcp.svelte.dev/mcp

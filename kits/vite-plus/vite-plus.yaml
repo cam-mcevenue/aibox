@@ -1,0 +1,40 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+
+displayName: Vite+ Development Tools
+description: Install Vite+ with managed Node.js 24
+
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - vite.plus:443
+          - viteplus.dev:443
+          - nodejs.org:443
+          - registry.npmjs.org:443
+
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      install:
+        - user: "1000"
+          command: |
+            set -euo pipefail
+
+            curl -fsSL https://vite.plus | VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash
+
+            . /home/agent/.config/vite-plus/env
+
+            vp env on
+            vp env default node@24
+
+        - user: "0"
+          command: |
+            set -eu
+
+            touch /etc/sandbox-persistent.sh
+
+            if ! grep -qxF '. /home/agent/.config/vite-plus/env' /etc/sandbox-persistent.sh; then
+              echo '. /home/agent/.config/vite-plus/env' >> /etc/sandbox-persistent.sh
+            fi

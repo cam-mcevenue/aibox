@@ -1,0 +1,17 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: Development Network Access
+description: Shared network permissions for development sandboxes
+
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - oxc.rs:443
+          - svelte.dev:443
+          - confect.dev:443
+          - developers.cloudflare.com:443
+          - doppler.com:443
+          - docs.doppler.com:443

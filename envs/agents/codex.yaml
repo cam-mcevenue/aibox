@@ -1,0 +1,6 @@
+schemaVersion: '1'
+
+agent: sbx-kit-codex
+
+kits:
+  - docker.io/docker/sbx-kit-codex:0.155.1
