@@ -1,0 +1,9 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: Claude shared skills
+
+capabilities:
+  - type: com.docker.sandbox/agent-skills@1
+    config:
+      path: /home/agent/.claude/skills
