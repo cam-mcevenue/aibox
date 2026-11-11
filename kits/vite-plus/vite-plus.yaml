@@ -3,7 +3,7 @@ schemaVersion: "3"
 kind: mixin
 
 displayName: Vite+ Development Tools
-description: Install Vite+ with managed Node.js 24
+description: Install Vite+ with managed Node.js 26
 
 capabilities:
   - type: com.docker.sandbox/network-policy@1
@@ -22,7 +22,7 @@ capabilities:
           command: |
             set -euo pipefail
 
-            curl -fsSL https://vite.plus | VP_SETUP_NODE_VERSION=24 VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash || {
+            curl -fsSL https://vite.plus | VP_SETUP_NODE_VERSION=26 VP_NODE_MANAGER=yes VP_PM_MANAGER=yes bash || {
               install_status=$?
               cat /home/agent/.local/share/vite-plus/upgrade.log >&2 || true
               exit "$install_status"
@@ -31,7 +31,7 @@ capabilities:
             . /home/agent/.config/vite-plus/env
 
             vp env on
-            vp env default node@24
+            vp env default node@26
 
         - user: "0"
           command: |
